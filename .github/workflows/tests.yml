@@ -41,6 +41,9 @@ jobs:
 
     - name: Install Python dependencies
       run: |
+        # NOTE: maturin requires a virtual environment to be active
+        python -m venv .venv
+        source .venv/bin/activate
         python -m pip install --upgrade pip
         python -m pip install -r requirements-ci.txt
 
