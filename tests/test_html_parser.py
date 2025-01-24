@@ -1,20 +1,20 @@
 # This same set of tests is also found in django-components, to ensure that
 # this implementation can be replaced with the django-components' pure-python implementation
 
-from djc_core_html_parser import transform_html
+from djc_core_html_parser import set_html_attributes
 from typing import Dict, List
 
 
 def test_basic_transformation():
     html = "<div><p>Hello</p></div>"
-    result, _ = transform_html(html, ["data-root"], ["data-all"])
+    result, _ = set_html_attributes(html, ["data-root"], ["data-all"])
     expected = '<div data-root="" data-all=""><p data-all="">Hello</p></div>'
     assert result == expected
 
 
 def test_multiple_roots():
     html = "<div>First</div><span>Second</span>"
-    result, _ = transform_html(html, ["data-root"], ["data-all"])
+    result, _ = set_html_attributes(html, ["data-root"], ["data-all"])
     expected = '<div data-root="" data-all="">First</div><span data-root="" data-all="">Second</span>'
     assert result == expected
 
@@ -42,7 +42,7 @@ def test_complex_html():
         </footer>
     """
 
-    result, _ = transform_html(html, ["data-root"], ["data-all", "data-v-123"])
+    result, _ = set_html_attributes(html, ["data-root"], ["data-all", "data-v-123"])
     expected = """
         <div class="container" id="main" data-root="" data-all="" data-v-123="">
             <header class="flex" data-all="" data-v-123="">
@@ -76,7 +76,7 @@ def test_void_elements():
     ]
 
     for input_html, expected in test_cases:
-        result, _ = transform_html(input_html, ["data-root"], ["data-v-123"])
+        result, _ = set_html_attributes(input_html, ["data-root"], ["data-v-123"])
         assert result == expected
 
 
@@ -89,7 +89,7 @@ def test_html_head_with_meta():
             <meta name="description" content="Test">
         </head>"""
 
-    result, _ = transform_html(html, ["data-root"], ["data-v-123"])
+    result, _ = set_html_attributes(html, ["data-root"], ["data-v-123"])
     expected = """
         <head data-root="" data-v-123="">
             <meta charset="utf-8" data-v-123=""/>
@@ -110,7 +110,7 @@ def test_watch_attribute():
 
     result: str
     captured: Dict[str, List[str]]
-    result, captured = transform_html(html, ["data-root"], ["data-v-123"], watch_on_attribute="data-id")
+    result, captured = set_html_attributes(html, ["data-root"], ["data-v-123"], watch_on_attribute="data-id")
     expected = """
         <div data-id="123" data-root="" data-v-123="">
             <p data-v-123="">Regular element</p>
@@ -140,7 +140,7 @@ def test_whitespace_preservation():
         <span> Text with spaces </span>
     </div>"""
 
-    result, _ = transform_html(html, ["data-root"], ["data-all"])
+    result, _ = set_html_attributes(html, ["data-root"], ["data-all"])
     expected = """<div data-root="" data-all="">
         <p data-all="">  Hello  World  </p>
         <span data-all=""> Text with spaces </span>

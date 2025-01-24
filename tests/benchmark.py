@@ -1,7 +1,7 @@
 from statistics import mean, stdev
 import time
 
-from djc_core_html_parser import transform_html
+from djc_core_html_parser import set_html_attributes
 
 
 def generate_large_html(num_elements: int = 1000) -> str:
@@ -85,7 +85,7 @@ modify_times = []
 for i in range(NUM_ITER):  # Run N iterations
 
     start = time.perf_counter()
-    transform_html(html, root_attributes, all_attributes, watch_on_attribute="data-id")
+    set_html_attributes(html, root_attributes, all_attributes, watch_on_attribute="data-id")
     modify_time = time.perf_counter() - start
     modify_times.append(modify_time)
 

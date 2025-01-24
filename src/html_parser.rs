@@ -31,7 +31,7 @@ const VOID_ELEMENTS: [&str; 14] = [
 ///
 /// Example:
 ///     >>> html = '<div data-id="123"><p>Hello</p></div>'
-///     >>> html, captured = transform_html(html, ['data-root-id'], ['data-v-123'], watch_on_attribute='data-id')
+///     >>> html, captured = set_html_attributes(html, ['data-root-id'], ['data-v-123'], watch_on_attribute='data-id')
 ///     >>> print(captured)
 ///     {'123': ['data-root-id', 'data-v-123']}
 ///
@@ -41,7 +41,7 @@ const VOID_ELEMENTS: [&str; 14] = [
 #[pyo3(
     text_signature = "(html, root_attributes, all_attributes, *, check_end_names=False, watch_on_attribute=None)"
 )]
-pub fn transform_html(
+pub fn set_html_attributes(
     py: Python,
     html: &str,
     root_attributes: Vec<String>,

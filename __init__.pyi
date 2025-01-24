@@ -1,6 +1,6 @@
 from typing import List, Dict, Optional
 
-def transform_html(
+def set_html_attributes(
     html: str,
     root_attributes: List[str],
     all_attributes: List[str],
@@ -25,7 +25,7 @@ def transform_html(
 
     Example:
         >>> html = '<div><p>Hello</p></div>'
-        >>> transform_html(html, ['data-root-id'], ['data-v-123'])
+        >>> set_html_attributes(html, ['data-root-id'], ['data-v-123'])
         '<div data-root-id="" data-v-123=""><p data-v-123="">Hello</p></div>'
 
     Raises:

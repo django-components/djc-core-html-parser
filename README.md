@@ -13,10 +13,10 @@ pip install djc-core-html-parser
 ## Usage
 
 ```python
-from djc_core_html_parser import transform_html
+from djc_core_html_parser import set_html_attributes
 
 html = '<div><p>Hello</p></div>'
-result, _ = transform_html(
+result, _ = set_html_attributes(
   html,
   # Add attributes to the root elements
   root_attributes=['data-root-id'],
@@ -25,7 +25,7 @@ result, _ = transform_html(
 )
 ```
 
-To save ourselves from re-parsing the HTML, `transform_html` returns not just the transformed HTML, but also a dictionary as the second item.
+To save ourselves from re-parsing the HTML, `set_html_attributes` returns not just the transformed HTML, but also a dictionary as the second item.
 
 This dictionary contains a record of which HTML attributes were written to which elemenents.
 
@@ -37,7 +37,7 @@ Then, during the HTML transformation, we check each element for this attribute. 
 2. Record the attributes that were added to the element, using the value of the watched attribute as the key.
 
 ```python
-from djc_core_html_parser import transform_html
+from djc_core_html_parser import set_html_attributes
 
 html = """
   <div data-watch-id="123">
@@ -47,7 +47,7 @@ html = """
   </div>
 """
 
-result, captured = transform_html(
+result, captured = set_html_attributes(
   html,
   # Add attributes to the root elements
   root_attributes=['data-root-id'],
