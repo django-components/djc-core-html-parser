@@ -1,0 +1,58 @@
+name: Run tests
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'dev'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
+        os: [ubuntu-20.04, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # First check Rust tests
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        components: rustfmt, clippy
+
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+
+    - name: Run Rust tests
+      run: cargo test
+
+    # After Rust tests pass, run Python tests next
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: "pip"
+
+    - name: Install Python dependencies
+      run: |
+        # NOTE: maturin requires a virtual environment to be active
+        python -m venv .venv
+        ${{ runner.os == 'Windows' && '.venv\Scripts\activate' || 'source .venv/bin/activate' }}
+        python -m pip install --upgrade pip
+        python -m pip install -r requirements-ci.txt
+
+    - name: Build Python package
+      run: |
+        ${{ runner.os == 'Windows' && '.venv\Scripts\activate' || 'source .venv/bin/activate' }}
+        maturin develop
+
+    - name: Run Python tests
+      run: |
+        ${{ runner.os == 'Windows' && '.venv\Scripts\activate' || 'source .venv/bin/activate' }}
+        pytest

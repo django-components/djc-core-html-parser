@@ -1,0 +1,19 @@
+[package]
+name = "djc_core_html_parser"
+version = "1.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "djc_core_html_parser"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.19.0", features = ["extension-module"] }
+quick-xml = "0.37.2"
+
+# https://ohadravid.github.io/posts/2023-03-rusty-python
+[profile.release]
+debug = true       # Debug symbols for profiler.
+lto = true         # Link-time optimization.
+codegen-units = 1  # Slower compilation but faster code. 
