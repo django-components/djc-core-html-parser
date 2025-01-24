@@ -20,7 +20,6 @@ const VOID_ELEMENTS: [&str; 14] = [
 ///     html (str): The HTML string to transform. Can be a fragment or full document.
 ///     root_attributes (List[str]): List of attribute names to add to root elements only.
 ///     all_attributes (List[str]): List of attribute names to add to all elements.
-///     expand_empty_elements (bool, optional): Whether to expand self-closing tags into open/close pairs. Defaults to true.
 ///     check_end_names (bool, optional): Whether to validate matching of end tags. Defaults to false.
 ///     watch_on_attribute (str, optional): If set, captures which attributes were added to elements with this attribute.
 ///
@@ -40,21 +39,19 @@ const VOID_ELEMENTS: [&str; 14] = [
 ///     ValueError: If the HTML is malformed or cannot be parsed.
 #[pyfunction]
 #[pyo3(
-    text_signature = "(html, root_attributes, all_attributes, *, expand_empty_elements=True, check_end_names=False, watch_on_attribute=None)"
+    text_signature = "(html, root_attributes, all_attributes, *, check_end_names=False, watch_on_attribute=None)"
 )]
 pub fn transform_html(
     py: Python,
     html: &str,
     root_attributes: Vec<String>,
     all_attributes: Vec<String>,
-    expand_empty_elements: Option<bool>,
     check_end_names: Option<bool>,
     watch_on_attribute: Option<String>,
 ) -> PyResult<PyObject> {
     let config = HtmlTransformerConfig::new(
         root_attributes,
         all_attributes,
-        expand_empty_elements.unwrap_or(true),
         check_end_names.unwrap_or(false),
         watch_on_attribute,
     );
@@ -79,7 +76,6 @@ pub struct HtmlTransformerConfig {
     root_attributes: Vec<String>,
     all_attributes: Vec<String>,
     void_elements: HashSet<String>,
-    expand_empty_elements: bool,
     check_end_names: bool,
     watch_on_attribute: Option<String>,
 }
@@ -88,7 +84,6 @@ impl HtmlTransformerConfig {
     pub fn new(
         root_attributes: Vec<String>,
         all_attributes: Vec<String>,
-        expand_empty_elements: bool,
         check_end_names: bool,
         watch_on_attribute: Option<String>,
     ) -> Self {
@@ -98,7 +93,6 @@ impl HtmlTransformerConfig {
             root_attributes,
             all_attributes,
             void_elements,
-            expand_empty_elements,
             check_end_names,
             watch_on_attribute,
         }
@@ -154,7 +148,6 @@ pub fn transform(
 ) -> Result<(String, Vec<(String, Vec<String>)>), Box<dyn std::error::Error>> {
     let mut reader = Reader::from_str(html);
     let reader_config = reader.config_mut();
-    reader_config.expand_empty_elements = config.expand_empty_elements;
     reader_config.check_end_names = config.check_end_names;
 
     // We transform the HTML by reading it and writing it simultaneously
@@ -226,7 +219,6 @@ mod tests {
         let config = HtmlTransformerConfig::new(
             vec!["data-root".to_string()],
             vec!["data-all".to_string()],
-            true,
             false,
             None,
         );
@@ -243,7 +235,6 @@ mod tests {
         let config = HtmlTransformerConfig::new(
             vec!["data-root".to_string()],
             vec!["data-all".to_string()],
-            true,
             false,
             None,
         );
@@ -262,7 +253,6 @@ mod tests {
         let config = HtmlTransformerConfig::new(
             vec!["data-root".to_string()],
             vec!["data-all".to_string(), "data-v-123".to_string()],
-            true,
             false,
             None,
         );
@@ -315,7 +305,6 @@ mod tests {
         let config = HtmlTransformerConfig::new(
             vec!["data-root".to_string()],
             vec!["data-v-123".to_string()],
-            true,
             false,
             None,
         );
@@ -369,7 +358,6 @@ mod tests {
         let config = HtmlTransformerConfig::new(
             vec!["data-root".to_string()],
             vec!["data-v-123".to_string()],
-            true,
             false,
             None,
         );
@@ -396,74 +384,11 @@ mod tests {
     }
 
     #[test]
-    fn test_config_expand_empty_elements() {
-        // Test with expand_empty_elements = false
-        let config = HtmlTransformerConfig::new(
-            vec!["data-root".to_string()],
-            vec!["data-v-123".to_string()],
-            false, // Don't expand empty elements
-            false,
-            None,
-        );
-
-        let test_cases = [
-            // Non-void elements should stay self-closing when expand_empty_elements is false
-            (
-                "<div/>",
-                "<div data-root=\"\" data-v-123=\"\"/>"
-            ),
-            (
-                "<p/>",
-                "<p data-root=\"\" data-v-123=\"\"/>"
-            ),
-            (
-                "<div><span/></div>",
-                "<div data-root=\"\" data-v-123=\"\"><span data-v-123=\"\"/></div>"
-            ),
-            // Void elements should always be self-closing regardless of config
-            (
-                "<div><img/><br/></div>",
-                "<div data-root=\"\" data-v-123=\"\"><img data-v-123=\"\"/><br data-v-123=\"\"/></div>"
-            ),
-        ];
-
-        for (input, expected) in test_cases {
-            let (result, _) = transform(&config, input).unwrap();
-            assert_eq!(result, expected);
-        }
-
-        // Compare with expand_empty_elements = true
-        let config = HtmlTransformerConfig::new(
-            vec!["data-root".to_string()],
-            vec!["data-v-123".to_string()],
-            true, // Expand empty elements
-            false,
-            None,
-        );
-
-        let expanded_cases = [
-            ("<div/>", "<div data-root=\"\" data-v-123=\"\"></div>"),
-            ("<p/>", "<p data-root=\"\" data-v-123=\"\"></p>"),
-            // Void elements should still be self-closing
-            (
-                "<div><img/></div>",
-                "<div data-root=\"\" data-v-123=\"\"><img data-v-123=\"\"/></div>",
-            ),
-        ];
-
-        for (input, expected) in expanded_cases {
-            let (result, _) = transform(&config, input).unwrap();
-            assert_eq!(result, expected);
-        }
-    }
-
-    #[test]
     fn test_config_check_end_names() {
         // Test with check_end_names = false (lenient mode)
         let config = HtmlTransformerConfig::new(
             vec!["data-root".to_string()],
             vec!["data-v-123".to_string()],
-            true,
             false, // Don't check end names
             None,
         );
@@ -483,7 +408,6 @@ mod tests {
         let config = HtmlTransformerConfig::new(
             vec!["data-root".to_string()],
             vec!["data-v-123".to_string()],
-            true,
             true, // Check end names
             None,
         );
@@ -503,7 +427,6 @@ mod tests {
         let config = HtmlTransformerConfig::new(
             vec!["data-root".to_string()],
             vec!["data-v-123".to_string()],
-            true,
             false,
             Some("data-id".to_string()),
         );

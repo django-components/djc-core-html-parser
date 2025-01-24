@@ -4,7 +4,6 @@ def transform_html(
     html: str,
     root_attributes: List[str],
     all_attributes: List[str],
-    expand_empty_elements: Optional[bool] = None,
     check_end_names: Optional[bool] = None,
     watch_on_attribute: Optional[str] = None,
 ) -> tuple[str, Dict[str, List[str]]]:
@@ -15,7 +14,6 @@ def transform_html(
         html (str): The HTML string to transform. Can be a fragment or full document.
         root_attributes (List[str]): List of attribute names to add to root elements only.
         all_attributes (List[str]): List of attribute names to add to all elements.
-        expand_empty_elements (Optional[bool]): Whether to expand self-closing tags into open/close pairs. Defaults to None.
         check_end_names (Optional[bool]): Whether to validate matching of end tags. Defaults to None.
         watch_on_attribute (Optional[str]): If set, captures which attributes were added to elements with this attribute.
 

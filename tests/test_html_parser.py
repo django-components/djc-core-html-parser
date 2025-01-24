@@ -100,34 +100,6 @@ def test_html_head_with_meta():
     assert result == expected
 
 
-def test_expand_empty_elements():
-    # Test with expand_empty_elements=False
-    test_cases = [
-        # Non-void elements should stay self-closing when expand_empty_elements is false
-        ("<div/>", '<div data-root="" data-v-123=""/>'),
-        ("<p/>", '<p data-root="" data-v-123=""/>'),
-        ("<div><span/></div>", '<div data-root="" data-v-123=""><span data-v-123=""/></div>'),
-        # Void elements should always be self-closing regardless of config
-        ("<div><img/><br/></div>", '<div data-root="" data-v-123=""><img data-v-123=""/><br data-v-123=""/></div>'),
-    ]
-
-    for input_html, expected in test_cases:
-        result, _ = transform_html(input_html, ["data-root"], ["data-v-123"], expand_empty_elements=False)
-        assert result == expected
-
-    # Compare with expand_empty_elements=True
-    expanded_cases = [
-        ("<div/>", '<div data-root="" data-v-123=""></div>'),
-        ("<p/>", '<p data-root="" data-v-123=""></p>'),
-        # Void elements should still be self-closing
-        ("<div><img/></div>", '<div data-root="" data-v-123=""><img data-v-123=""/></div>'),
-    ]
-
-    for input_html, expected in expanded_cases:
-        result, _ = transform_html(input_html, ["data-root"], ["data-v-123"], expand_empty_elements=True)
-        assert result == expected
-
-
 def test_watch_attribute():
     html = """
         <div data-id="123">
