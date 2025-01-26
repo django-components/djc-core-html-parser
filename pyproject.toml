@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "djc_core_html_parser"
-version = "1.0.0"
+version = "1.0.1"
 requires-python = ">=3.8, <4.0"
 description = "HTML parser used by django-components written in Rust."
 keywords = ["django", "components", "html"]
@@ -37,6 +37,11 @@ Donate = "https://github.com/sponsors/EmilStenstrom"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
+include = [
+    "djc_core_html_parser/__init__.py",
+    "djc_core_html_parser/__init__.pyi",
+    "djc_core_html_parser/py.typed",
+]
 
 [tool.black]
 line-length = 119

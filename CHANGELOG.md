@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.0.1
+
+- Fix module typing.
+
 ## v1.0.0
 
 Initial release.
