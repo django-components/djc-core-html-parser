@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "djc_core_html_parser"
-version = "1.0.1"
+version = "1.0.2"
 requires-python = ">=3.8, <4.0"
 description = "HTML parser used by django-components written in Rust."
 keywords = ["django", "components", "html"]
