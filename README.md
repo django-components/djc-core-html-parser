@@ -1,5 +1,7 @@
 # djc-core-html-parser
 
+[![PyPI - Version](https://img.shields.io/pypi/v/djc-core-html-parser)](https://pypi.org/project/djc-core-html-parser/) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/djc-core-html-parser)](https://pypi.org/project/djc-core-html-parser/) [![PyPI - License](https://img.shields.io/pypi/l/djc-core-html-parser)](https://github.com/django-components/djc-core-html-parser/blob/master/LICENSE/) [![PyPI - Downloads](https://img.shields.io/pypi/dm/djc-core-html-parser)](https://pypistats.org/packages/djc-core-html-parser) [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/django-components/djc-core-html-parser/tests.yml)](https://github.com/django-components/djc-core-html-parser/actions/workflows/tests.yml)
+
 HTML parser used by [django-components](https://github.com/django-components/django-components). Written in Rust, exposed as a Python package with [maturin](https://www.maturin.rs/).
 
 This implementation was found to be 40-50x faster than our Python implementation, taking ~90ms to parse 5 MB of HTML.
