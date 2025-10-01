@@ -17,7 +17,7 @@ jobs:
         os: [ubuntu-20.04, windows-latest]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     # First check Rust tests
     - name: Install Rust toolchain
