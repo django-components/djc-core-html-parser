@@ -38,6 +38,7 @@ const VOID_ELEMENTS: [&str; 14] = [
 /// Raises:
 ///     ValueError: If the HTML is malformed or cannot be parsed.
 #[pyfunction]
+#[pyo3(signature = (html, root_attributes, all_attributes, check_end_names=None, watch_on_attribute=None))]
 #[pyo3(
     text_signature = "(html, root_attributes, all_attributes, *, check_end_names=False, watch_on_attribute=None)"
 )]
@@ -48,7 +49,7 @@ pub fn set_html_attributes(
     all_attributes: Vec<String>,
     check_end_names: Option<bool>,
     watch_on_attribute: Option<String>,
-) -> PyResult<PyObject> {
+) -> PyResult<Py<PyAny>> {
     let config = HtmlTransformerConfig::new(
         root_attributes,
         all_attributes,
@@ -64,8 +65,12 @@ pub fn set_html_attributes(
                 captured_dict.set_item(id, attrs)?;
             }
 
-            let result = PyTuple::new(py, &[html.into_py(py), captured_dict.into_py(py)]);
-            Ok(result.into())
+            // Convert items to Bound<PyAny> for the tuple
+            use pyo3::types::PyString;
+            let html_obj = PyString::new(py, &html).as_any().clone();
+            let dict_obj = captured_dict.as_any().clone();
+            let result = PyTuple::new(py, vec![html_obj, dict_obj])?;
+            Ok(result.into_any().unbind())
         }
         Err(e) => Err(PyValueError::new_err(e.to_string())),
     }
@@ -149,6 +154,9 @@ pub fn transform(
     let mut reader = Reader::from_str(html);
     let reader_config = reader.config_mut();
     reader_config.check_end_names = config.check_end_names;
+    // Allow bare & in HTML content (e.g. "Hello & Welcome" instead of requiring "Hello &amp; Welcome")
+    // This is needed for compatibility with HTML5 which is more lenient than strict XML
+    reader_config.allow_dangling_amp = true;
 
     // We transform the HTML by reading it and writing it simultaneously
     let mut writer = Writer::new(Cursor::new(Vec::new()));
