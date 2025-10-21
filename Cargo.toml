@@ -9,7 +9,7 @@ name = "djc_core_html_parser"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.22.0", features = ["extension-module"] }
+pyo3 = { version = "0.23.0", features = ["extension-module"] }
 quick-xml = "0.37.2"
 
 # https://ohadravid.github.io/posts/2023-03-rusty-python

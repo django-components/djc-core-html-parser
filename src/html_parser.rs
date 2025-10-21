@@ -60,13 +60,17 @@ pub fn set_html_attributes(
     match transform(&config, html) {
         Ok((html, captured)) => {
             // Convert captured attributes to a Python dictionary
-            let captured_dict = PyDict::new_bound(py);
+            let captured_dict = PyDict::new(py);
             for (id, attrs) in captured {
                 captured_dict.set_item(id, attrs)?;
             }
 
-            let result = PyTuple::new_bound(py, &[html.into_py(py), captured_dict.into_py(py)]);
-            Ok(result.into())
+            // Convert items to Bound<PyAny> for the tuple
+            use pyo3::types::PyString;
+            let html_obj = PyString::new(py, &html).as_any().clone();
+            let dict_obj = captured_dict.as_any().clone();
+            let result = PyTuple::new(py, vec![html_obj, dict_obj])?;
+            Ok(result.into_any().unbind())
         }
         Err(e) => Err(PyValueError::new_err(e.to_string())),
     }
