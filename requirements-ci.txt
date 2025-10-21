@@ -6,7 +6,7 @@
 #
 iniconfig==2.0.0
     # via pytest
-maturin==1.8.1
+maturin==1.9.6
     # via -r requirements-ci.in
 packaging==24.2
     # via pytest
