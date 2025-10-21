@@ -38,6 +38,7 @@ const VOID_ELEMENTS: [&str; 14] = [
 /// Raises:
 ///     ValueError: If the HTML is malformed or cannot be parsed.
 #[pyfunction]
+#[pyo3(signature = (html, root_attributes, all_attributes, check_end_names=None, watch_on_attribute=None))]
 #[pyo3(
     text_signature = "(html, root_attributes, all_attributes, *, check_end_names=False, watch_on_attribute=None)"
 )]
