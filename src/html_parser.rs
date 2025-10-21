@@ -154,6 +154,9 @@ pub fn transform(
     let mut reader = Reader::from_str(html);
     let reader_config = reader.config_mut();
     reader_config.check_end_names = config.check_end_names;
+    // Allow bare & in HTML content (e.g. "Hello & Welcome" instead of requiring "Hello &amp; Welcome")
+    // This is needed for compatibility with HTML5 which is more lenient than strict XML
+    reader_config.allow_dangling_amp = true;
 
     // We transform the HTML by reading it and writing it simultaneously
     let mut writer = Writer::new(Cursor::new(Vec::new()));
