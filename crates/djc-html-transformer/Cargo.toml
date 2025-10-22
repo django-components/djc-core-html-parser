@@ -1,0 +1,8 @@
+[package]
+name = "djc-html-transformer"
+version = "1.0.3"
+edition = "2021"
+
+[dependencies]
+pyo3 = { workspace = true }
+quick-xml = { workspace = true }

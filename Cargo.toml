@@ -1,14 +1,11 @@
-[package]
-name = "djc_core_html_parser"
-version = "1.0.3"
-edition = "2021"
+[workspace]
+members = [
+    "crates/djc-core",
+    "crates/djc-html-transformer",
+]
+resolver = "2"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[lib]
-name = "djc_core_html_parser"
-crate-type = ["cdylib"]
-
-[dependencies]
+[workspace.dependencies]
 pyo3 = { version = "0.27.0", features = ["extension-module"] }
 quick-xml = "0.38.3"
 

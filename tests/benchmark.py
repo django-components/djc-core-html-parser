@@ -1,7 +1,7 @@
 from statistics import mean, stdev
 import time
 
-from djc_core_html_parser import set_html_attributes
+from djc_core import set_html_attributes
 
 
 def generate_large_html(num_elements: int = 1000) -> str:

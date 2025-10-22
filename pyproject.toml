@@ -3,8 +3,8 @@ requires = ["maturin>=1.8,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "djc_core_html_parser"
-version = "1.0.3"
+name = "djc_core"
+version = "1.1.0"
 requires-python = ">=3.8, <4.0"
 description = "HTML parser used by django-components written in Rust."
 keywords = ["django", "components", "html"]
@@ -31,17 +31,19 @@ license = {text = "MIT"}
 
 # See https://docs.pypi.org/project_metadata/#icons
 [project.urls]
-Homepage = "https://github.com/django-components/djc-core-html-parser/"
-Changelog = "https://github.com/django-components/djc-core-html-parser/blob/main/CHANGELOG.md"
-Issues = "https://github.com/django-components/djc-core-html-parser/issues"
+Homepage = "https://github.com/django-components/djc-core/"
+Changelog = "https://github.com/django-components/djc-core/blob/main/CHANGELOG.md"
+Issues = "https://github.com/django-components/djc-core/issues"
 Donate = "https://github.com/sponsors/EmilStenstrom"
 
 [tool.maturin]
+# This is the crate that will be exposed to Python
+manifest-path = "crates/djc-core/Cargo.toml"
 features = ["pyo3/extension-module"]
 include = [
-    "djc_core_html_parser/__init__.py",
-    "djc_core_html_parser/__init__.pyi",
-    "djc_core_html_parser/py.typed",
+    "djc_core/__init__.py",
+    "djc_core/__init__.pyi",
+    "djc_core/py.typed",
 ]
 
 [tool.black]
@@ -67,7 +69,7 @@ profile = "black"
 line_length = 119
 multi_line_output = 3
 include_trailing_comma = "True"
-known_first_party = "djc_core_html_parser"
+known_first_party = "djc_core"
 
 [tool.flake8]
 ignore = ['E302', 'W503']
@@ -92,7 +94,7 @@ exclude = [
 ]
 
 [[tool.mypy.overrides]]
-module = "djc_core_html_parser.*"
+module = "djc_core.*"
 disallow_untyped_defs = true
 
 
