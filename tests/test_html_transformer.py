@@ -1,7 +1,7 @@
 # This same set of tests is also found in django-components, to ensure that
 # this implementation can be replaced with the django-components' pure-python implementation
 
-from djc_core_html_parser import set_html_attributes
+from djc_core import set_html_attributes
 from typing import Dict, List
 
 

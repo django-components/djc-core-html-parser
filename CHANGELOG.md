@@ -1,5 +1,10 @@
 # Release notes
 
+## v1.1.0
+
+- Renamed package from `djc-core-html-parser` to `djc-core`
+- Refactored project into a monorepo
+
 ## v1.0.3
 
 - Update to Python 3.14

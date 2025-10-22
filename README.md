@@ -1,21 +1,27 @@
-# djc-core-html-parser
+# djc-core
 
-[![PyPI - Version](https://img.shields.io/pypi/v/djc-core-html-parser)](https://pypi.org/project/djc-core-html-parser/) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/djc-core-html-parser)](https://pypi.org/project/djc-core-html-parser/) [![PyPI - License](https://img.shields.io/pypi/l/djc-core-html-parser)](https://github.com/django-components/djc-core-html-parser/blob/master/LICENSE/) [![PyPI - Downloads](https://img.shields.io/pypi/dm/djc-core-html-parser)](https://pypistats.org/packages/djc-core-html-parser) [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/django-components/djc-core-html-parser/tests.yml)](https://github.com/django-components/djc-core-html-parser/actions/workflows/tests.yml)
+[![PyPI - Version](https://img.shields.io/pypi/v/djc-core)](https://pypi.org/project/djc-core/) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/djc-core)](https://pypi.org/project/djc-core/) [![PyPI - License](https://img.shields.io/pypi/l/djc-core)](https://github.com/django-components/djc-core/blob/master/LICENSE/) [![PyPI - Downloads](https://img.shields.io/pypi/dm/djc-core)](https://pypistats.org/packages/djc-core) [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/django-components/djc-core/tests.yml)](https://github.com/django-components/djc-core/actions/workflows/tests.yml)
 
-HTML parser used by [django-components](https://github.com/django-components/django-components). Written in Rust, exposed as a Python package with [maturin](https://www.maturin.rs/).
-
-This implementation was found to be 40-50x faster than our Python implementation, taking ~90ms to parse 5 MB of HTML.
+Rust-based parsers and toolings used by [django-components](https://github.com/django-components/django-components). Exposed as a Python package with [maturin](https://www.maturin.rs/).
 
 ## Installation
 
 ```sh
-pip install djc-core-html-parser
+pip install djc-core
 ```
 
-## Usage
+## Packages
+
+### HTML transfomer
+
+Transform HTML in a single pass. This is a simple implementation.
+
+This implementation was found to be 40-50x faster than our Python implementation, taking ~90ms to parse 5 MB of HTML.
+
+**Usage**
 
 ```python
-from djc_core_html_parser import set_html_attributes
+from djc_core import set_html_attributes
 
 html = '<div><p>Hello</p></div>'
 result, _ = set_html_attributes(
@@ -39,7 +45,7 @@ Then, during the HTML transformation, we check each element for this attribute. 
 2. Record the attributes that were added to the element, using the value of the watched attribute as the key.
 
 ```python
-from djc_core_html_parser import set_html_attributes
+from djc_core import set_html_attributes
 
 html = """
   <div data-watch-id="123">
@@ -117,4 +123,4 @@ To publish a new version of the package, you need to:
 
 1. Bump the version in `pyproject.toml` and `Cargo.toml`
 2. Open a PR and merge it to `main`.
-3. Create a new tag on the `main` branch with the new version number (e.g. `v1.0.0`), or create a new release in the GitHub UI.
+3. Create a new tag on the `main` branch with the new version number (e.g. `1.0.0`), or create a new release in the GitHub UI.
