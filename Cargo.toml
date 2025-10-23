@@ -2,12 +2,18 @@
 members = [
     "crates/djc-core",
     "crates/djc-html-transformer",
+    "crates/djc-template-parser",
 ]
 resolver = "2"
 
 [workspace.dependencies]
 pyo3 = { version = "0.27.1", features = ["extension-module"] }
 quick-xml = "0.38.3"
+pest = "2.8.3"
+pest_derive = "2.8.3"
+thiserror = "2.0.17"
+regex = "1.12.2"
+lazy_static = "1.5.0"
 
 # https://ohadravid.github.io/posts/2023-03-rusty-python
 [profile.release]

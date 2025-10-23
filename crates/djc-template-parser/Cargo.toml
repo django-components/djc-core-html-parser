@@ -1,0 +1,14 @@
+[package]
+name = "djc-template-parser"
+description = "Parse Django template tags into an AST and compile it into a Python function"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+pyo3 = { workspace = true }
+quick-xml = { workspace = true }
+pest = { workspace = true }
+pest_derive = { workspace = true }
+thiserror = { workspace = true }
+regex = { workspace = true }
+lazy_static = { workspace = true }

@@ -11,5 +11,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 djc-html-transformer = { path = "../djc-html-transformer" }
+djc-template-parser = { path = "../djc-template-parser" }
 pyo3 = { workspace = true }
 quick-xml = { workspace = true }
