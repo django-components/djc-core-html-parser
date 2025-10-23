@@ -1,5 +1,6 @@
 [package]
 name = "djc-core"
+description = "Singular Python API for Rust code used by django-components"
 version = "1.1.0"
 edition = "2021"
 
