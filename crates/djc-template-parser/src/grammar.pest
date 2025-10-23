@@ -13,21 +13,31 @@
 /////////////////////////////
 
 // The full tag is a sequence of attributes
-// E.g. `{% slot key=val key2=val2 %}` or `<slot key=val key2=val2>`
-tag_wrapper = { SOI ~ (django_tag | html_tag) ~ EOI }
-
-django_tag = { "{%" ~ tag_content ~ "%}" }
-html_tag = { "<" ~ tag_content ~ ">" }
+// E.g. `{% slot key=val key2=val2 %}`
+// NOTE: tag_wrapper is used when parsing exclusively a single Django template tag.
+tag_wrapper = { SOI ~ django_tag ~ EOI }
+django_tag = @{ "{%" ~ spacing_with_whitespace ~ tag_content ~ spacing_with_whitespace ~ "%}" }
 
 // The contents of a tag, without the delimiters
 tag_content = ${
-    spacing*                             // Optional leading whitespace/comments
-    ~ tag_name                           // The tag name must come first, MAY be preceded by whitespace
-    ~ (spacing+ ~ attribute)*            // Then zero or more attributes, MUST be separated by whitespace/comments
-    ~ spacing*                           // Optional trailing whitespace/comments
-    ~ self_closing_slash?                // Optional self-closing slash
-    ~ spacing*                           // More optional trailing whitespace
+    tag_name                                  // The tag name must come first
+    ~ (spacing_with_whitespace ~ attribute)*  // Then zero or more attributes, MUST be separated by whitespace
+    ~ (spacing_with_whitespace ~ self_closing_slash)?  // Optional self-closing slash at the end
+    // ^^^^^^^^^^^^^^^^^^^^^^^ This space is REQUIRED in Django tags
+                                                       // There MUST be space between last attribute and self-closing slash
 }
+
+// NOTE: For supporting HTML tags, we could add rules like this:
+// tag_wrapper = { SOI ~ (django_tag | html_tag) ~ EOI }
+// html_tag = { "<" ~ html_tag_content ~ ">" }
+// html_tag_content = ${
+//     tag_name                                  // The tag name must come first
+//     ~ (spacing_with_whitespace ~ attribute)*  // Then zero or more attributes, MUST be separated by whitespace
+//     ~ (spacing* ~ self_closing_slash)?        // Optional self-closing slash at the end
+//    // ^^^^^^^^^ This space is OPTIONAL in HTML
+//                                               // There MAY be space between last attribute and self-closing slash
+//                                               // and NO space between `/` and closing `>`
+// }
 
 // Tag name SHOULD be a valid Python identifier, but this syntax leaves us space
 // to also support kebab-case, snake_case, PascalCase, and tag namespacing (for sharing components)
@@ -40,8 +50,8 @@ self_closing_slash = { "/" }
 // E.g. `key=val`, `key2=val2`, `"val3"`, `...[1, 2, 3]`
 attribute = ${
     (key ~ "=" ~ filtered_value)    // key=value form with NO whitespace allowed around =
-    | spread_value         // spread operator form
-    | filtered_value                // value-only form
+    | spread_value                  // spread operator form (e.g. `...[1, 2, 3]`)
+    | filtered_value                // value-only form (e.g. `"val3"`)
 }
 
 // Spread operator followed by a value, e.g. `...[1, 2, 3]`
@@ -115,6 +125,9 @@ filtered_value = {
 filter_chain = {
     spacing* ~ filter ~ (spacing* ~ filter)*
 }
+// In the position of a dictionary key we don't allow filter arguments
+// because filter args also use colon `:`, which conflicts with dict keys.
+// So something like `{"key"|lower:arg: value}` would be ambiguous.
 filter_chain_noarg = {
     spacing* ~ filter_noarg ~ (spacing* ~ filter_noarg)*
 }
@@ -198,37 +211,38 @@ list_item = {
 // Dictionary rules
 dict = {
     "{"
-    ~ spacing*
+    ~ spacing*         // Optional leading whitespace
     ~ (
-        dict_item ~ (spacing* ~ "," ~ spacing* ~ dict_item)*
+        dict_item ~ (spacing* ~ "," ~ spacing* ~ dict_item)*  // 0 or more dict items, separated by commas
     )?
-    ~ spacing* ~ ","?
+    ~ spacing* ~ ","?  // Optional trailing comma
     ~ spacing* ~ "}"
 }
 dict_item = _{ (dict_item_pair | dict_item_spread) }
-dict_item_pair = { dict_key ~ spacing* ~ ":" ~ spacing* ~ filtered_value }
-dict_item_spread = { "**" ~ spacing* ~ filtered_value }
+dict_item_pair = { dict_key ~ spacing* ~ ":" ~ spacing* ~ filtered_value } // `key: value` pair
+dict_item_spread = { "**" ~ spacing* ~ filtered_value } // `**value` spread
 
 // A filtered key can have filters but not filter arguments
 // because filter args also use colon `:`, which conflicts with dict keys.
 // So something like `{"key"|lower:arg: value}` would be ambiguous.
 dict_key = {
-    basic_value ~ filter_chain_noarg?
+    dict_key_inner ~ filter_chain_noarg?
 }
 
-/////////////////////////////
-// SCALARS AND UTILS
-/////////////////////////////
-
-// Common value types used in multiple places
 // NOTE: Order matters here - We need to first check for `_("...")` because `_`
 //       is also a valid variable name.
-basic_value = _{
+dict_key_inner = _{
     i18n_string
     | variable
     | number
     | string_literal
 }
+
+/////////////////////////////
+// SCALARS AND UTILS
+//
+// Common value types used in multiple places
+/////////////////////////////
 
 number = _{
     float | int
@@ -285,6 +299,13 @@ i18n_string = @{
 
 // Spacing includes both whitespace and comments
 spacing = _{ WHITESPACE | COMMENT }
+
+// Spacing that requires at least one WHITESPACE character
+// This ensures there's at least one whitespace between tag_name and attributes,
+// but allows any number of comments
+spacing_with_whitespace = {
+    (COMMENT* ~ WHITESPACE ~ COMMENT*)+
+}
 
 // Comments are wrapped in {# ... #} and can contain anything except the closing #}
 // Comments may be between attributes, e.g. `key1=val1 {# comment #} key2=val2`
