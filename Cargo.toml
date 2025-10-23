@@ -6,11 +6,11 @@ members = [
 resolver = "2"
 
 [workspace.dependencies]
-pyo3 = { version = "0.27.0", features = ["extension-module"] }
+pyo3 = { version = "0.27.1", features = ["extension-module"] }
 quick-xml = "0.38.3"
 
 # https://ohadravid.github.io/posts/2023-03-rusty-python
 [profile.release]
-debug = true       # Debug symbols for profiler.
-lto = true         # Link-time optimization.
-codegen-units = 1  # Slower compilation but faster code. 
+debug = true      # Debug symbols for profiler.
+lto = true        # Link-time optimization.
+codegen-units = 1 # Slower compilation but faster code.

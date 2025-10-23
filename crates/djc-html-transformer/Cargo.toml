@@ -1,8 +1,8 @@
 [package]
 name = "djc-html-transformer"
+description = "Apply attributes to HTML in a single pass"
 version = "1.0.3"
 edition = "2021"
 
 [dependencies]
-pyo3 = { workspace = true }
 quick-xml = { workspace = true }
