@@ -1,16 +1,44 @@
-use djc_html_transformer::{
-    set_html_attributes as set_html_attributes_rust, HtmlTransformerConfig,
+use djc_html_transformer::{set_html_attributes as set_html_attributes_rust, HtmlTransformerConfig};
+use djc_template_parser::{
+    compile_ast_to_string as compile_ast_to_string_rust, parse_tag as parse_tag_rust, Tag, TagAttr,
+    TagSyntax, TagToken, TagValue, TagValueFilter, ValueKind,
 };
-use pyo3::exceptions::{PyValueError};
+use pyo3::exceptions::{PySyntaxError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyTuple};
+use pyo3::types::{PyList, PyDict, PyTuple};
+use std::collections::HashSet;
 
 /// Singular Python API that brings togther all the other Rust crates.
 #[pymodule]
 fn djc_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // HTML transformer
     m.add_function(wrap_pyfunction!(set_html_attributes, m)?)?;
+
+    // Template parser
+    m.add_function(wrap_pyfunction!(parse_tag, m)?)?;
+    m.add_function(wrap_pyfunction!(compile_ast_to_string, m)?)?;
+    m.add_class::<Tag>()?;
+    m.add_class::<TagAttr>()?;
+    m.add_class::<TagSyntax>()?;
+    m.add_class::<TagToken>()?;
+    m.add_class::<TagValue>()?;
+    m.add_class::<TagValueFilter>()?;
+    m.add_class::<ValueKind>()?;
+
     Ok(())
+}
+
+#[pyfunction]
+#[pyo3(signature = (input, flags=None))]
+fn parse_tag(input: &str, flags: Option<HashSet<String>>) -> PyResult<Tag> {
+    parse_tag_rust(input, flags).map_err(|e| PySyntaxError::new_err(e.to_string()))
+}
+
+#[pyfunction]
+fn compile_ast_to_string(py: Python, attributes: &Bound<PyList>) -> PyResult<String> {
+    let attrs: Vec<TagAttr> = attributes.extract()?;
+    let result = py.detach(|| compile_ast_to_string_rust(&attrs));
+    result.map_err(|e| PySyntaxError::new_err(e.to_string()))
 }
 
 /// Transform HTML by adding attributes to the elements.

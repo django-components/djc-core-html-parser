@@ -1,0 +1,317 @@
+// Legend:
+// See https://docs.rs/pest/latest/pest/#pest-the-elegant-parser
+// -  { ... }: None - Accept whitespace or comments within their expressions.
+//                    Create token pairs during parsing, error-reported.
+// - _{ ... }: Silent - Do not create token pairs during parsing, nor are they error-reported.
+// - @{ ... }: Atomic - Do not accept whitespace or comments within their expressions.
+//                      Any rules called by atomic rules do not generate token pairs.
+// - ${ ... }: Compound-atomic - Same as atomic, plus not forbidden from generating token pairs.
+
+
+/////////////////////////////
+// TAG
+/////////////////////////////
+
+// The full tag is a sequence of attributes
+// E.g. `{% slot key=val key2=val2 %}`
+// NOTE: tag_wrapper is used when parsing exclusively a single Django template tag.
+tag_wrapper = { SOI ~ django_tag ~ EOI }
+django_tag = @{ "{%" ~ spacing_with_whitespace ~ tag_content ~ spacing_with_whitespace ~ "%}" }
+
+// The contents of a tag, without the delimiters
+tag_content = ${
+    tag_name                                  // The tag name must come first
+    ~ (spacing_with_whitespace ~ attribute)*  // Then zero or more attributes, MUST be separated by whitespace
+    ~ (spacing_with_whitespace ~ self_closing_slash)?  // Optional self-closing slash at the end
+    // ^^^^^^^^^^^^^^^^^^^^^^^ This space is REQUIRED in Django tags
+                                                       // There MUST be space between last attribute and self-closing slash
+}
+
+// NOTE: For supporting HTML tags, we could add rules like this:
+// tag_wrapper = { SOI ~ (django_tag | html_tag) ~ EOI }
+// html_tag = { "<" ~ html_tag_content ~ ">" }
+// html_tag_content = ${
+//     tag_name                                  // The tag name must come first
+//     ~ (spacing_with_whitespace ~ attribute)*  // Then zero or more attributes, MUST be separated by whitespace
+//     ~ (spacing* ~ self_closing_slash)?        // Optional self-closing slash at the end
+//    // ^^^^^^^^^ This space is OPTIONAL in HTML
+//                                               // There MAY be space between last attribute and self-closing slash
+//                                               // and NO space between `/` and closing `>`
+// }
+
+// Tag name SHOULD be a valid Python identifier, but this syntax leaves us space
+// to also support kebab-case, snake_case, PascalCase, and tag namespacing (for sharing components)
+// with either `.` or `:`
+tag_name = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_" | "-" | ":" | ".")* }
+
+self_closing_slash = { "/" }
+
+// An attribute can be either a key-value pair or just a value
+// E.g. `key=val`, `key2=val2`, `"val3"`, `...[1, 2, 3]`
+attribute = ${
+    (key ~ "=" ~ filtered_value)    // key=value form with NO whitespace allowed around =
+    | spread_value                  // spread operator form (e.g. `...[1, 2, 3]`)
+    | filtered_value                // value-only form (e.g. `"val3"`)
+}
+
+// Spread operator followed by a value, e.g. `...[1, 2, 3]`
+spread_value = {
+    "..." ~ filtered_value
+}
+
+/////////////////////////////
+// KEY
+/////////////////////////////
+
+// Full key definition
+// NOTE: @ in front of a rule means they should not have whitespace in between
+key = @{ key_start ~ key_char* }
+
+// A key must not start with certain characters
+key_start = @{
+    !((":" | "'" | "\"" | "_(" | "[" | "{" | "*" | "..." | WHITESPACE) ~ ANY) ~
+    key_char
+}
+
+// Characters that can appear in a key
+//
+// Keys are preferably alphanumeric + `_-`. But practically we allow much more,
+// as these may be HTML attributes.
+//
+// Rules to keys:
+// 1. Keys do not contain whitespaces
+// 2. Must NOT start with `:` or `'`, `"`, `_("`, `_('`, `[`, `{`, `*`, `**`, `...`
+// 3. Key is terminated when it comes across:
+//    - Any of `=`, `'`, `"`, `_("`, `_('`, `[`, `{`, `*`, `**`, `...`
+//    - Any whitespace
+//
+// Examples:
+// - `key=val` - valid key
+// - `:key=val` - invalid
+// - `attr:key=val` - valid, because `:` is not first
+// - `...key=val` - invalid, key cannot follow `...`
+// - `_("hello")` - not a key. It is a valid value, but not a key
+// - `"key"=val` - invalid, keys must not contain quotes
+// - `key[0]=val` - invalid. we don't allow setting indices. So the key would end at `[`, so it
+//                  would be as if having two attributes: `key` and `[0]=val`.
+//                  However, then there's a missing space between the two, so that's an error too.
+//                  And `[0]` would also be an invalid key.
+key_char = @{
+    ASCII_ALPHANUMERIC |
+    "_" | "-" | "@" | "#" | "." | ":" |  // Common special chars
+    // Add other allowed special chars here
+    !(("=" | "'" | "\"" | "_(" | "[" | "{" | "*" | "..." | WHITESPACE) ~ ANY) ~ ANY
+}
+
+/////////////////////////////
+// FILTER
+/////////////////////////////
+
+// Tag value can be a simple value followed by optional filters
+//
+// Value syntax supports Django filters, e.g. `"HELLO"|lower` or `my_list|select:1`,
+// generally with format `value|filter:filter_arg`. Multiple filters can be chained
+// up one after another.
+//
+// For context on how Django parses filters, see:
+// https://github.com/django/django/blob/862b7f98a02b7973848db578ff6d24ec8500fdb4/django/template/base.py#L621
+//
+// NOTE: Filter pipe CAN be separated by whitespace
+filtered_value = {
+    value ~ filter_chain?
+}
+
+// A chain of filters separated by pipes
+filter_chain = {
+    spacing* ~ filter ~ (spacing* ~ filter)*
+}
+// In the position of a dictionary key we don't allow filter arguments
+// because filter args also use colon `:`, which conflicts with dict keys.
+// So something like `{"key"|lower:arg: value}` would be ambiguous.
+filter_chain_noarg = {
+    spacing* ~ filter_noarg ~ (spacing* ~ filter_noarg)*
+}
+
+// A single filter with optional argument
+// NOTE: Filter pipe `|` CAN be surrounded by whitespace
+filter = {
+    "|" ~ spacing* ~ filter_name ~ filter_arg_part?
+}
+filter_noarg = {
+    "|" ~ spacing* ~ filter_name
+}
+
+// Filter name must be alphanumeric + `_`
+filter_name = @{
+    !(":" | "|") ~ (ASCII_ALPHANUMERIC | "_")+ // Ensure filter name doesn't start with : or |
+}
+
+// NOTE: Filter arg `:` CAN be surrounded by whitespace
+// The argument part of a filter, including the colon
+filter_arg_part = {
+    spacing* ~ ":" ~ spacing* ~ filter_arg
+}
+
+filter_arg = {
+    value
+}
+
+/////////////////////////////
+// VALUE
+/////////////////////////////
+
+// The actual value
+// 
+// - A number (e.g. -1, +1.5, .5, 1e-10)
+// - A variable name (alphanumeric + dots)
+// - A string literal (single or double quoted)
+// - An i18n string (string literal wrapped in _())
+// - List of values
+// - Dictionary of values
+//
+// NOTE: Order matters here - We need to first check for `_("...")` because `_`
+//       is also a valid variable name.
+value = {
+    dict |
+    list |
+    i18n_string |
+    variable |
+    number |
+    string_literal
+}
+
+/////////////////////////////
+// LIST
+/////////////////////////////
+
+// List of values, e.g. [1, "a"|upper, [2, 3],]
+// List items MAY be spread with `*`
+list = {
+    "[" ~ spacing*
+    ~ (
+        list_item ~ spacing*                          // First value
+        ~ ("," ~ spacing* ~ list_item ~ spacing*)*    // Additional values
+        ~ ("," ~ spacing*)?                           // Optional trailing comma
+    )?
+    ~ "]"
+}
+
+
+// A single list item, which can be spread
+// NOTE: Spread operator CAN be surrounded by whitespace
+list_item = {
+    spacing* ~ "*"? ~ spacing* ~ filtered_value
+}
+
+
+/////////////////////////////
+// DICT
+/////////////////////////////
+
+// Dictionary rules
+dict = {
+    "{"
+    ~ spacing*         // Optional leading whitespace
+    ~ (
+        dict_item ~ (spacing* ~ "," ~ spacing* ~ dict_item)*  // 0 or more dict items, separated by commas
+    )?
+    ~ spacing* ~ ","?  // Optional trailing comma
+    ~ spacing* ~ "}"
+}
+dict_item = _{ (dict_item_pair | dict_item_spread) }
+dict_item_pair = { dict_key ~ spacing* ~ ":" ~ spacing* ~ filtered_value } // `key: value` pair
+dict_item_spread = { "**" ~ spacing* ~ filtered_value } // `**value` spread
+
+// A filtered key can have filters but not filter arguments
+// because filter args also use colon `:`, which conflicts with dict keys.
+// So something like `{"key"|lower:arg: value}` would be ambiguous.
+dict_key = {
+    dict_key_inner ~ filter_chain_noarg?
+}
+
+// NOTE: Order matters here - We need to first check for `_("...")` because `_`
+//       is also a valid variable name.
+dict_key_inner = _{
+    i18n_string
+    | variable
+    | number
+    | string_literal
+}
+
+/////////////////////////////
+// SCALARS AND UTILS
+//
+// Common value types used in multiple places
+/////////////////////////////
+
+number = _{
+    float | int
+}
+
+// Float pattern: Matches numbers with decimal point or scientific notation
+float = @{
+    ("-" | "+")? ~
+    (
+        // .42, .42e-10
+        ("." ~ ASCII_DIGIT+ ~ ("e" ~ ("-" | "+")? ~ ASCII_DIGIT+)?) |
+        // 42.42, 42.42e-10
+        (ASCII_DIGIT+ ~ "." ~ ASCII_DIGIT* ~ ("e" ~ ("-" | "+")? ~ ASCII_DIGIT+)?) |
+        // 42e-10
+        (ASCII_DIGIT+ ~ "e" ~ ("-" | "+")? ~ ASCII_DIGIT+)
+    )
+}
+
+// Int pattern: Matches whole numbers
+int = @{
+    ("-" | "+")? ~ ASCII_DIGIT+
+}
+
+// Variable pattern: \w\.
+variable = @{
+    (ASCII_ALPHA | "_") ~
+    (ASCII_ALPHANUMERIC | "_" | ".")*
+}
+
+// String literals (single or double quoted)
+string_literal = @{
+    double_quoted_string |
+    single_quoted_string
+}
+
+// Double quoted strings that may contain escaped quote
+double_quoted_string = @{
+    "\"" ~ (!"\"" ~ ("\\\"" | ANY))* ~ "\""
+}
+
+// Single quoted strings that may contain escaped quote
+single_quoted_string = @{
+    "'" ~ (!"'" ~ ("\\'" | ANY))* ~ "'"
+}
+
+// i18n strings: _("string") or _('string')
+i18n_string = @{
+    "_("
+    ~ spacing*
+    ~ (double_quoted_string | single_quoted_string)
+    ~ spacing*
+    ~ ")"
+}
+
+// Spacing includes both whitespace and comments
+spacing = _{ WHITESPACE | COMMENT }
+
+// Spacing that requires at least one WHITESPACE character
+// This ensures there's at least one whitespace between tag_name and attributes,
+// but allows any number of comments
+spacing_with_whitespace = {
+    (COMMENT* ~ WHITESPACE ~ COMMENT*)+
+}
+
+// Comments are wrapped in {# ... #} and can contain anything except the closing #}
+// Comments may be between attributes, e.g. `key1=val1 {# comment #} key2=val2`
+COMMENT = @{ "{#" ~ (!"#}" ~ ANY)* ~ "#}" }
+
+// NOTE: `_{` in front of a rule means that the characters will be excluded from the AST.
+//        So in other words, the AST won't contain a "whitespace" node. It will be simply
+//        blind to whitespace.
+WHITESPACE = _{ " " | "\t" | "\n" | "\r" }
