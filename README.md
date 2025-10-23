@@ -72,6 +72,24 @@ print(captured)
 # }
 ```
 
+## Architecture
+
+This project uses a multi-crate Rust workspace structure to maintain clean separation of concerns:
+
+### Crate Structure
+
+- **`djc-html-transformer`**: Pure Rust library for HTML transformation
+- **`djc-template-parser`**: Pure Rust library for Django template parsing
+- **`djc-core`**: Python bindings that combine all other libraries
+
+### Design Philosophy
+
+To make sense of the code and keep it clean, the Python API and Rust logic are defined separately:
+
+1. Each crate (AKA Rust package) has `lib.rs` (which is like Python's `__init__.py`). These files do not define the main logic, but only the public API of the crate. So the API that's to be used by other crates.
+2. The `djc-core` crate imports other crates
+3. And it is only this `djc-core` where we define the Python API using PyO3.
+
 ## Development
 
 1. Setup python env
