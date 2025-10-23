@@ -666,7 +666,7 @@ class TestFilter:
     def test_filter_argument_must_follow_filter(self):
         with pytest.raises(
             SyntaxError,
-            match=re.escape("expected self_closing_slash, filter, or COMMENT"),
+            match=re.escape("expected filter or COMMENT"),
         ):
             parse_tag('{% component value=val|yesno:"yes,no":arg %}')
 
@@ -3670,6 +3670,6 @@ class TestSelfClosing:
     def test_self_closing_in_middle_errors(self):
         with pytest.raises(
             SyntaxError,
-            match=r"expected COMMENT",
+            match=r"expected attribute or COMMENT",
         ):
             parse_tag("{% my_tag / key=val %}")
