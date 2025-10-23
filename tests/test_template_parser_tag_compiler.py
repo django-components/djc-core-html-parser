@@ -28,7 +28,7 @@ def test_full_compilation_flow():
     }
 
     mock_variable = Mock(side_effect=lambda ctx, var: ctx.get(var))
-    mock_expression = Mock(side_effect=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}")
+    mock_template_string = Mock(side_effect=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}")
     mock_translation = Mock(side_effect=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}")
 
     def dummy_filter_side_effect(context, name, value, arg=None):
@@ -43,7 +43,7 @@ def test_full_compilation_flow():
     args, kwargs = compiled_func(
         context,
         variable=mock_variable,
-        expression=mock_expression,
+        template_string=mock_template_string,
         translation=mock_translation,
         filter=mock_filter,
     )
@@ -57,7 +57,7 @@ def test_full_compilation_flow():
             call(context, "my_val"),
         ]
     )
-    mock_expression.assert_called_once_with(context, "{{ an_expression }}")
+    mock_template_string.assert_called_once_with(context, "{{ an_expression }}")
     mock_translation.assert_called_once_with(context, "a translation")
     mock_filter.assert_has_calls(
         [
@@ -77,7 +77,7 @@ def test_full_compilation_flow():
         ("key_one", "a value"),
         ("key_two", "resolved_var_two"),
         ("key_three", "TRANSLATION_RESOLVED:a translation"),
-        ("key_four", "EXPRESSION_RESOLVED:{{ an_expression }}"),
+        ("key_four", "TEMPLATE_RESOLVED:{{ an_expression }}"),
         # Spread variables from `...spread_var|my_filter` are expanded into tuples
         ("a", 1),
         ("b", 2),
@@ -100,7 +100,7 @@ def test_flag_after_kwarg():
     args1, kwargs1 = compiled_func1(
         context={},
         variable=lambda ctx, var: ctx[var],
-        expression=Mock(),
+        template_string=Mock(),
         translation=Mock(),
         filter=Mock(),
     )
@@ -132,7 +132,7 @@ class TestParamsOrder:
             tag_func(
                 context={},
                 variable=Mock(),
-                expression=Mock(),
+                template_string=Mock(),
                 translation=Mock(),
                 filter=Mock(),
             )
@@ -144,7 +144,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={"positional_arg": 4},
             variable=lambda ctx, var: ctx[var],
-            expression=Mock(),
+            template_string=Mock(),
             translation=Mock(),
             filter=Mock(),
         )
@@ -158,7 +158,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={"positional_arg": 1},
             variable=lambda ctx, var: ctx[var],
-            expression=Mock(),
+            template_string=Mock(),
             translation=Mock(),
             filter=Mock(),
         )
@@ -172,7 +172,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={},
             variable=Mock(),
-            expression=Mock(),
+            template_string=Mock(),
             translation=Mock(),
             filter=Mock(),
         )
@@ -186,7 +186,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={"positional_arg": 4},
             variable=lambda ctx, var: ctx[var],
-            expression=Mock(),
+            template_string=Mock(),
             translation=Mock(),
             filter=Mock(),
         )
@@ -201,7 +201,7 @@ class TestParamsOrder:
             tag_func(
                 context={},
                 variable=Mock(),
-                expression=Mock(),
+                template_string=Mock(),
                 translation=Mock(),
                 filter=Mock(),
             )
@@ -213,7 +213,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={},
             variable=Mock(),
-            expression=Mock(),
+            template_string=Mock(),
             translation=Mock(),
             filter=Mock(),
         )
@@ -227,7 +227,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={},
             variable=Mock(),
-            expression=Mock(),
+            template_string=Mock(),
             translation=Mock(),
             filter=Mock(),
         )
@@ -242,7 +242,7 @@ class TestParamsOrder:
             tag_func(
                 context={},
                 variable=Mock(),
-                expression=Mock(),
+                template_string=Mock(),
                 translation=Mock(),
                 filter=Mock(),
             )
@@ -254,7 +254,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={},
             variable=Mock(),
-            expression=Mock(),
+            template_string=Mock(),
             translation=Mock(),
             filter=Mock(),
         )

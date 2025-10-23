@@ -12,7 +12,7 @@ class CompiledFunc(Protocol[TContext]):
         context: TContext,
         *,
         variable: Callable[[TContext, str], Any],
-        expression: Callable[[TContext, str], Any],
+        template_string: Callable[[TContext, str], Any],
         translation: Callable[[TContext, str], Any],
         filter: Callable[[TContext, str, Any, Any], Any],
     ) -> Tuple[List[Any], List[Tuple[str, Any]]]: ...
@@ -31,14 +31,14 @@ class CompiledFunc(Protocol[TContext]):
 
     context = {"val1": "foo", "b": "bar"}
     variable = lambda ctx, var: ctx.get(var)
-    expression = lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}"
+    template_string = lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}"
     translation = lambda ctx, text: f"TRANSLATION_RESOLVED:{text}"
     filter = lambda ctx, name, value, arg=None: f"{value}|{name}:{arg}"
 
     args, kwargs = compiled_func(
         context,
         variable=variable,
-        expression=expression,
+        template_string=template_string,
         translation=translation,
         filter=filter,
     )

@@ -10,7 +10,7 @@
 //! - **Argument ordering**: Maintains Python-like behavior with positional args before keyword args
 //! - **Spread operators**: Handles `...list` and `**dict` spread syntax
 //! - **Filter compilation**: Converts Django filter chains to Python expressions
-//! - **Value type handling**: Properly handles strings, numbers, variables, expressions, etc.
+//! - **Value type handling**: Properly handles strings, numbers, variables, template_strings, etc.
 //! - **Error detection**: Compile-time detection of invalid argument ordering
 //! - **Indentation**: Properly indents generated code for readability
 //!
@@ -100,7 +100,7 @@ pub fn compile_ast_to_string(attributes: &[TagAttr]) -> Result<String, CompileEr
     }
 
     let mut final_code = String::new();
-    let signature = "def compiled_func(context, *, expression, translation, variable, filter):";
+    let signature = "def compiled_func(context, *, template_string, translation, variable, filter):";
     final_code.push_str(signature);
     final_code.push_str("\n");
 
@@ -163,7 +163,7 @@ fn compile_value(value: &TagValue) -> Result<String, CompileError> {
             Ok(value.token.token.clone())
         }
         ValueKind::Variable => Ok(format!("variable(context, '{}')", value.token.token)),
-        ValueKind::Expression => Ok(format!("expression(context, {})", value.token.token)),
+        ValueKind::TemplateString => Ok(format!("template_string(context, {})", value.token.token)),
         ValueKind::Translation => {
             let inner_string_start = value.token.token.find('(').map(|i| i + 1).unwrap_or(0);
             let inner_string_end = value
@@ -281,7 +281,7 @@ mod tests {
         TagValue {
             token: create_tag_token(&quoted_token),
             children: vec![],
-            kind: ValueKind::Expression,
+            kind: ValueKind::TemplateString,
             spread: None,
             filters: vec![],
             start_index: 0,
@@ -344,7 +344,7 @@ mod tests {
     fn test_no_attributes() {
         let ast = vec![];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
     return args, kwargs"#;
@@ -355,7 +355,7 @@ mod tests {
     fn test_single_arg() {
         let ast = vec![create_arg_attr(create_var_tag_value("my_var"))];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
     args.append(variable(context, 'my_var'))
@@ -371,7 +371,7 @@ mod tests {
             create_arg_attr(create_int_tag_value(123)),
         ];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
     args.append(variable(context, 'my_var'))
@@ -385,7 +385,7 @@ mod tests {
     fn test_single_kwarg() {
         let ast = vec![create_kwarg_attr("key", create_var_tag_value("my_var"))];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
     kwargs.append(('key', variable(context, 'my_var')))
@@ -400,7 +400,7 @@ mod tests {
             create_kwarg_attr("key2", create_string_tag_value("hello")),
         ];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
     kwargs.append(('key1', variable(context, 'my_var')))
@@ -416,7 +416,7 @@ mod tests {
             create_kwarg_attr("key", create_string_tag_value("value")),
         ];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
     args.append(42)
@@ -434,7 +434,7 @@ mod tests {
             create_kwarg_attr("key", create_string_tag_value("value")),
         ];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     def _handle_spread(value, raw_token_str, args, kwargs, kwarg_seen):
         if hasattr(value, "keys"):
             kwargs.extend(value.items())
@@ -471,7 +471,7 @@ mod tests {
             create_kwarg_attr("key2", create_string_tag_value("value2")),
         ];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     def _handle_spread(value, raw_token_str, args, kwargs, kwarg_seen):
         if hasattr(value, "keys"):
             kwargs.extend(value.items())
@@ -499,13 +499,13 @@ mod tests {
     }
 
     #[test]
-    fn test_expression_arg() {
+    fn test_template_string_arg() {
         let ast = vec![create_arg_attr(create_expr_tag_value("\"{{ my_var }}\""))];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
-    args.append(expression(context, "{{ my_var }}"))
+    args.append(template_string(context, "{{ my_var }}"))
     return args, kwargs"#;
         assert_eq!(result, expected.to_string());
     }
@@ -514,7 +514,7 @@ mod tests {
     fn test_translation_arg() {
         let ast = vec![create_arg_attr(create_trans_tag_value("\"hello world\""))];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
     args.append(translation(context, "hello world"))
@@ -534,7 +534,7 @@ mod tests {
         });
         let ast = vec![create_arg_attr(value)];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
     args.append(filter(context, 'upper', variable(context, 'my_var'), None))
@@ -554,7 +554,7 @@ mod tests {
         });
         let ast = vec![create_arg_attr(value)];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
     args.append(filter(context, 'default', variable(context, 'my_var'), "none"))
@@ -581,7 +581,7 @@ mod tests {
         });
         let ast = vec![create_arg_attr(value)];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
     args.append(filter(context, 'default', filter(context, 'upper', variable(context, 'my_var'), None), "none"))
@@ -603,7 +603,7 @@ mod tests {
         };
         let ast = vec![create_arg_attr(list_value)];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
     args.append([1, variable(context, 'my_var')])
@@ -628,7 +628,7 @@ mod tests {
         };
         let ast = vec![create_kwarg_attr("data", dict_value)];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
     kwargs.append(('data', {"key": variable(context, 'my_var')}))
@@ -651,7 +651,7 @@ mod tests {
         ];
         let result = compile_ast_to_string(&ast).unwrap();
 
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     def _handle_spread(value, raw_token_str, args, kwargs, kwarg_seen):
         if hasattr(value, "keys"):
             kwargs.extend(value.items())
@@ -689,7 +689,7 @@ mod tests {
             flag_attr,
         ];
         let result = compile_ast_to_string(&ast).unwrap();
-        let expected = r#"def compiled_func(context, *, expression, translation, variable, filter):
+        let expected = r#"def compiled_func(context, *, template_string, translation, variable, filter):
     args = []
     kwargs = []
     kwargs.append(('key', "value"))

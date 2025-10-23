@@ -339,7 +339,7 @@ How it works is:
 
 	```py
     def resolve_template_string(ctx: Context, expr: str) -> Any:
-        return DynamicFilterExpression(
+        return TemplateStringExpression(
             expr_str=expr,
             filters=filters,
             tags=tags,
@@ -425,7 +425,7 @@ INPUT:
 
 Generated function:
 ```py
-def compiled_func(context, *, expression, translation, variable, filter):
+def compiled_func(context, *, template_string, translation, variable, filter):
     def _handle_spread(value, raw_token_str, args, kwargs, kwarg_seen):
         if hasattr(value, "keys"):
             kwargs.extend(value.items())

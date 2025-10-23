@@ -7,12 +7,12 @@
 //!
 //! ## Features
 //!
-//! - **Complex value types**: strings, numbers, variables, expressions, translations, lists, dicts
+//! - **Complex value types**: strings, numbers, variables, template_strings, translations, lists, dicts
 //! - **Filter chains**: `value|filter1|filter2:arg`
 //! - **Spread operators**: `...list` and `**dict`
 //! - **Comments**: `{# comment #}` within tag content
 //! - **Position tracking**: line/column information for error reporting
-//! - **Dynamic expression detection**: identifies `{{ }}` expressions in values
+//! - **Template string detection**: identifies strings with Django template tags inside them
 //! - Can be easily extended to support HTML syntax `<my_tag key=value />`
 //!
 //! ## Error Handling
@@ -403,8 +403,8 @@ impl TagParser {
         let kind = match value_pair.as_rule() {
             Rule::i18n_string => ValueKind::Translation,
             Rule::string_literal => {
-                if Self::has_dynamic_expression(text) {
-                    ValueKind::Expression
+                if Self::has_template_string(text) {
+                    ValueKind::TemplateString
                 } else {
                     ValueKind::String
                 }
@@ -713,8 +713,8 @@ impl TagParser {
         Ok(filters)
     }
 
-    fn has_dynamic_expression(s: &str) -> bool {
-        // Don't check for dynamic expressions in i18n strings
+    fn has_template_string(s: &str) -> bool {
+        // Don't check for template strings in i18n strings
         if s.starts_with("_(") {
             return false;
         }
@@ -3447,7 +3447,7 @@ mod tests {
     }
 
     #[test]
-    fn test_filter_arg_expression() {
+    fn test_filter_arg_template_string() {
         let input = r#"{% my_tag value|default:"{{ var }}" %}"#;
         let result = TagParser::parse_tag(input, &HashSet::new()).unwrap();
         assert_eq!(
@@ -3485,7 +3485,7 @@ mod tests {
                                     line_col: (1, 25),
                                 },
                                 children: vec![],
-                                kind: ValueKind::Expression,
+                                kind: ValueKind::TemplateString,
                                 spread: None,
                                 filters: vec![],
                                 start_index: 23,
@@ -5140,7 +5140,7 @@ mod tests {
                                 spread: Some("*".to_string()),
                                 filters: vec![],
                                 children: vec![],
-                                kind: ValueKind::Expression,
+                                kind: ValueKind::TemplateString,
                                 start_index: 65,
                                 end_index: 77,
                                 line_col: (1, 66),
@@ -5487,7 +5487,7 @@ mod tests {
                                     end_index: 130,
                                     line_col: (1, 126),
                                 }],
-                                kind: ValueKind::Expression,
+                                kind: ValueKind::TemplateString,
                                 start_index: 113,
                                 end_index: 130,
                                 line_col: (1, 114),
@@ -5885,8 +5885,8 @@ mod tests {
     }
 
     #[test]
-    fn test_dynamic_expression_negative() {
-        // Test simple string without dynamic expression
+    fn test_template_string_negative() {
+        // Test simple string without template string
         let input = "{% my_tag \"Hello\" %}";
         let result = TagParser::parse_tag(input, &HashSet::new()).unwrap();
         assert_eq!(
@@ -5930,7 +5930,7 @@ mod tests {
     }
 
     #[test]
-    fn test_dynamic_expression_block() {
+    fn test_template_string_block() {
         // Test string with {% tag %}
         let input = "{% my_tag \"Hello {% lorem w 1 %}\" %}";
         let result = TagParser::parse_tag(input, &HashSet::new()).unwrap();
@@ -5955,7 +5955,7 @@ mod tests {
                         children: vec![],
                         spread: None,
                         filters: vec![],
-                        kind: ValueKind::Expression,
+                        kind: ValueKind::TemplateString,
                         start_index: 10,
                         end_index: 33,
                         line_col: (1, 11),
@@ -5975,7 +5975,7 @@ mod tests {
     }
 
     #[test]
-    fn test_dynamic_expression_variable() {
+    fn test_template_string_variable() {
         // Test string with {{ variable }}
         let input = "{% my_tag \"Hello {{ last_name }}\" %}";
         let result = TagParser::parse_tag(input, &HashSet::new()).unwrap();
@@ -6000,7 +6000,7 @@ mod tests {
                         children: vec![],
                         spread: None,
                         filters: vec![],
-                        kind: ValueKind::Expression,
+                        kind: ValueKind::TemplateString,
                         start_index: 10,
                         end_index: 33,
                         line_col: (1, 11),
@@ -6020,7 +6020,7 @@ mod tests {
     }
 
     #[test]
-    fn test_dynamic_expression_comment() {
+    fn test_template_string_comment() {
         // Test string with {# comment #}
         let input = "{% my_tag \"Hello {# TODO #}\" %}";
         let result = TagParser::parse_tag(input, &HashSet::new()).unwrap();
@@ -6045,7 +6045,7 @@ mod tests {
                         children: vec![],
                         spread: None,
                         filters: vec![],
-                        kind: ValueKind::Expression,
+                        kind: ValueKind::TemplateString,
                         start_index: 10,
                         end_index: 28,
                         line_col: (1, 11),
@@ -6065,8 +6065,8 @@ mod tests {
     }
 
     #[test]
-    fn test_dynamic_expression_mixed() {
-        // Test string with multiple expressions
+    fn test_template_string_mixed() {
+        // Test string with multiple template tags
         let input = "{% my_tag \"Hello {{ first_name }} {% lorem 1 w %} {# TODO #}\" %}";
         let result = TagParser::parse_tag(input, &HashSet::new()).unwrap();
         assert_eq!(
@@ -6091,7 +6091,7 @@ mod tests {
                         children: vec![],
                         spread: None,
                         filters: vec![],
-                        kind: ValueKind::Expression,
+                        kind: ValueKind::TemplateString,
                         start_index: 10,
                         end_index: 61,
                         line_col: (1, 11),
@@ -6111,8 +6111,8 @@ mod tests {
     }
 
     #[test]
-    fn test_dynamic_expression_invalid() {
-        // Test incomplete expressions (should not be marked as dynamic)
+    fn test_template_string_invalid() {
+        // Test incomplete template tags (should not be marked as template_string)
         let inputs = vec![
             r#"{% my_tag "Hello {{ first_name" %}"#,
             r#"{% my_tag "Hello {% first_name" %}"#,
@@ -6170,8 +6170,8 @@ mod tests {
     }
 
     #[test]
-    fn test_dynamic_expression_filter_arg() {
-        // Test that dynamic expressions are detected in filter args
+    fn test_template_string_filter_arg() {
+        // Test that template strings are detected in filter args
         let input = "{% my_tag value|default:\"{{ var }}\" %}";
         let result = TagParser::parse_tag(input, &HashSet::new()).unwrap();
         assert_eq!(
@@ -6211,7 +6211,7 @@ mod tests {
                                 children: vec![],
                                 spread: None,
                                 filters: vec![],
-                                kind: ValueKind::Expression,
+                                kind: ValueKind::TemplateString,
                                 start_index: 23,
                                 end_index: 35,
                                 line_col: (1, 24),
@@ -6240,8 +6240,8 @@ mod tests {
     }
 
     #[test]
-    fn test_dynamic_expression_i18n() {
-        // Test that dynamic expressions are not detected in i18n strings
+    fn test_template_string_i18n() {
+        // Test that template strings are not detected in i18n strings
         let input = "{% my_tag _(\"{{ var }}\") %}";
         let result = TagParser::parse_tag(input, &HashSet::new()).unwrap();
         assert_eq!(
@@ -7179,7 +7179,7 @@ mod tests {
                                 children: vec![],
                                 spread: Some("**".to_string()),
                                 filters: vec![],
-                                kind: ValueKind::Expression,
+                                kind: ValueKind::TemplateString,
                                 start_index: 57,
                                 end_index: 71,
                                 line_col: (1, 58),
@@ -7330,7 +7330,7 @@ mod tests {
                                 children: vec![],
                                 spread: Some("**".to_string()),
                                 filters: vec![],
-                                kind: ValueKind::Expression,
+                                kind: ValueKind::TemplateString,
                                 start_index: 57,
                                 end_index: 71,
                                 line_col: (1, 58),

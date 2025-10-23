@@ -8,7 +8,7 @@
 //!
 //! The AST represents Django template tags in a structured format that captures:
 //! - Tag names and attributes
-//! - Values with their types (strings, numbers, variables, expressions, etc.)
+//! - Values with their types (strings, numbers, variables, template_strings, etc.)
 //! - Filter chains and filter arguments
 //! - Position information (line/column, start/end indices)
 //! - Syntax type (Django `{% %}` vs HTML `< />` tags)
@@ -20,7 +20,7 @@
 //! - **`TagValue`**: Represents a value with type information and optional filters - `'some_val'|upper`
 //! - **`TagToken`**: Represents a token with position information
 //! - **`TagValueFilter`**: Represents a filter applied to a value
-//! - **`ValueKind`**: Enum of supported value types (list, dict, int, float, variable, expression, translation, string)
+//! - **`ValueKind`**: Enum of supported value types (list, dict, int, float, variable, template_string, translation, string)
 //! - **`TagSyntax`**: Enum of supported tag syntaxes (Django vs HTML)
 //!
 //! All AST types are exposed to Python via PyO3 bindings.
@@ -144,7 +144,7 @@ pub enum ValueKind {
     Int,
     Float,
     Variable,
-    Expression,
+    TemplateString,  // A string that contains a Django template tags, e.g. `"{{ my_var }}"`
     Translation,
     String,
 }
@@ -159,7 +159,7 @@ impl ValueKind {
             "int" => Ok(ValueKind::Int),
             "float" => Ok(ValueKind::Float),
             "variable" => Ok(ValueKind::Variable),
-            "expression" => Ok(ValueKind::Expression),
+            "template_string" => Ok(ValueKind::TemplateString),
             "translation" => Ok(ValueKind::Translation),
             "string" => Ok(ValueKind::String),
             _ => Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -176,7 +176,7 @@ impl ValueKind {
             ValueKind::Int => "int".to_string(),
             ValueKind::Float => "float".to_string(),
             ValueKind::Variable => "variable".to_string(),
-            ValueKind::Expression => "expression".to_string(),
+            ValueKind::TemplateString => "template_string".to_string(),
             ValueKind::Translation => "translation".to_string(),
             ValueKind::String => "string".to_string(),
         }

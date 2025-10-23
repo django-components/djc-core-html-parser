@@ -123,7 +123,7 @@ class TestTagParser:
         args, kwargs = tag_func(
             context={"val": [1, 2, 3]},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -259,7 +259,7 @@ class TestTagParser:
         args, kwargs = tag_func(
             context={"val": "some_value"},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -362,7 +362,7 @@ class TestTagParser:
         args, kwargs = tag_func(
             context={},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -407,7 +407,7 @@ class TestTagParser:
         args, kwargs = tag_func(
             context={},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -554,7 +554,7 @@ class TestFilter:
         args, kwargs = tag_func(
             context={"value": "HELLO", "val": True, "val2": None},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -652,7 +652,7 @@ class TestFilter:
         args, kwargs = tag_func(
             context={"value": "HELLO", "val": "world", "val2": "test"},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -730,7 +730,7 @@ class TestDict:
         args, kwargs = tag_func(
             context={},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -796,7 +796,7 @@ class TestDict:
         args, kwargs = tag_func(
             context={},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -873,7 +873,7 @@ class TestDict:
         args1, kwargs1 = tag_func(
             context={"spread": {"key": "val"}},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -883,7 +883,7 @@ class TestDict:
         args2, kwargs2 = tag_func(
             context={"spread": {}},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -897,7 +897,7 @@ class TestDict:
             tag_func(
                 context={"spread": [1, 2, 3]},
                 variable=lambda ctx, var: ctx[var],
-                expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+                template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
                 translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
                 filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
             )
@@ -909,7 +909,7 @@ class TestDict:
             tag_func(
                 context={"spread": 3},
                 variable=lambda ctx, var: ctx[var],
-                expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+                template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
                 translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
                 filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
             )
@@ -921,7 +921,7 @@ class TestDict:
             tag_func(
                 context={"spread": None},
                 variable=lambda ctx, var: ctx[var],
-                expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+                template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
                 translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
                 filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
             )
@@ -1019,7 +1019,7 @@ class TestDict:
         args1, kwargs1 = tag_func(
             context={"spread": {"a": 1}, "val": "HELLO", "val2": "WORLD"},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -1389,7 +1389,7 @@ class TestDict:
         args1, kwargs1 = tag_func(
             context={"spread": {6: 7}, "c": None, "val": "bar"},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -1470,7 +1470,7 @@ class TestList:
         args1, kwargs1 = tag_func(
             context={},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -1545,7 +1545,7 @@ class TestList:
         args1, kwargs1 = tag_func(
             context={},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -1850,7 +1850,7 @@ class TestList:
         args1, kwargs1 = tag_func(
             context={"nested": [1, 2, 3], "spread": [5, 6], "c": None},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -2374,7 +2374,7 @@ class TestList:
         args1, kwargs1 = tag_func(
             context={"spread_items": None, "nums": [1, 2, 3], "more": "x", "rest": {"a": "b"}},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: {**value, "injected": True}
             if name == "injectd"
@@ -2481,7 +2481,7 @@ class TestSpread:
         args1, kwargs1 = tag_func(
             context={"spread": {6: 7}},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: {**value, "ABC": arg}
             if name == "abc"
@@ -2615,7 +2615,7 @@ class TestSpread:
         args1, kwargs1 = tag_func(
             context={"my_attr": {6: 7}, "my_list": [8, 9]},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -2632,7 +2632,7 @@ class TestSpread:
             tag_func(
                 context={"my_attr": [6, 7], "my_list": [8, 9]},
                 variable=lambda ctx, var: ctx[var],
-                expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+                template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
                 translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
                 filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
             )
@@ -2642,7 +2642,7 @@ class TestSpread:
         args2, kwargs2 = tag_func(
             context={"my_attr": {6: 7}, "my_list": {8: 9}},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -2813,7 +2813,7 @@ class TestSpread:
         args, kwargs = tag_func(
             context={"val1": 1, "val2": 2},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -2878,7 +2878,7 @@ class TestSpread:
         args, kwargs = tag_func(
             context={"val1": 1, "val2": 2},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -2954,7 +2954,7 @@ class TestSpread:
         args, kwargs = tag_func(
             context={"val1": 1, "val2": 2},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3009,7 +3009,7 @@ class TestSpread:
         args, kwargs = tag_func(
             context={"val1": 1, "val2": 2},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3017,8 +3017,8 @@ class TestSpread:
         assert kwargs == []
 
 
-class TestDynamicExpression:
-    def test_dynamic_expressions(self):
+class TestTemplateString:
+    def test_template_string(self):
         tag = parse_tag("{% component '{% lorem w 4 %}' %}")
 
         expected_tag = Tag(
@@ -3029,7 +3029,7 @@ class TestDynamicExpression:
                     value=TagValue(
                         token=TagToken(token="'{% lorem w 4 %}'", start_index=13, end_index=30, line_col=(1, 14)),
                         children=[],
-                        kind=ValueKind("expression"),
+                        kind=ValueKind("template_string"),
                         spread=None,
                         filters=[],
                         start_index=13,
@@ -3055,14 +3055,14 @@ class TestDynamicExpression:
         args, kwargs = tag_func(
             context={"val1": 1, "val2": 2},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
-        assert args == ["EXPRESSION_RESOLVED:{% lorem w 4 %}"]
+        assert args == ["TEMPLATE_RESOLVED:{% lorem w 4 %}"]
         assert kwargs == []
 
-    def test_dynamic_expressions_in_dict(self):
+    def test_template_string_in_dict(self):
         tag = parse_tag('{% component { "key": "{% lorem w 4 %}" } %}')
 
         expected_tag = Tag(
@@ -3090,7 +3090,7 @@ class TestDynamicExpression:
                                     token='"{% lorem w 4 %}"', start_index=22, end_index=39, line_col=(1, 23)
                                 ),
                                 children=[],
-                                kind=ValueKind("expression"),
+                                kind=ValueKind("template_string"),
                                 spread=None,
                                 filters=[],
                                 start_index=22,
@@ -3124,14 +3124,14 @@ class TestDynamicExpression:
         args, kwargs = tag_func(
             context={"val1": 1, "val2": 2},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
-        assert args == [{"key": "EXPRESSION_RESOLVED:{% lorem w 4 %}"}]
+        assert args == [{"key": "TEMPLATE_RESOLVED:{% lorem w 4 %}"}]
         assert kwargs == []
 
-    def test_dynamic_expressions_in_list(self):
+    def test_template_string_in_list(self):
         tag = parse_tag("{% component [ '{% lorem w 4 %}' ] %}")
 
         expected_tag = Tag(
@@ -3147,7 +3147,7 @@ class TestDynamicExpression:
                                     token="'{% lorem w 4 %}'", start_index=15, end_index=32, line_col=(1, 16)
                                 ),
                                 children=[],
-                                kind=ValueKind("expression"),
+                                kind=ValueKind("template_string"),
                                 spread=None,
                                 filters=[],
                                 start_index=15,
@@ -3181,11 +3181,11 @@ class TestDynamicExpression:
         args, kwargs = tag_func(
             context={"val1": 1, "val2": 2},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
-        assert args == [["EXPRESSION_RESOLVED:{% lorem w 4 %}"]]
+        assert args == [["TEMPLATE_RESOLVED:{% lorem w 4 %}"]]
         assert kwargs == []
 
 
@@ -3227,7 +3227,7 @@ class TestComments:
         args, kwargs = tag_func(
             context={"val": 1, "val2": 2},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3305,7 +3305,7 @@ class TestComments:
         args, kwargs = tag_func(
             context={"val1": 1, "val2": 2},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3372,7 +3372,7 @@ class TestComments:
         args, kwargs = tag_func(
             context={"val1": 1, "val2": 2},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3396,7 +3396,7 @@ class TestParamsOrder:
             tag_func(
                 context={},
                 variable=lambda ctx, var: ctx[var],
-                expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+                template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
                 translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
                 filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
             )
@@ -3408,7 +3408,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={"positional_arg": 4},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3422,7 +3422,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={"positional_arg": 1},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3436,7 +3436,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3450,7 +3450,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={"positional_arg": 4},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3465,7 +3465,7 @@ class TestParamsOrder:
             tag_func(
                 context={},
                 variable=lambda ctx, var: ctx[var],
-                expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+                template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
                 translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
                 filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
             )
@@ -3477,7 +3477,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3491,7 +3491,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3506,7 +3506,7 @@ class TestParamsOrder:
             tag_func(
                 context={},
                 variable=lambda ctx, var: ctx[var],
-                expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+                template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
                 translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
                 filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
             )
@@ -3518,7 +3518,7 @@ class TestParamsOrder:
         args, kwargs = tag_func(
             context={},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3539,7 +3539,7 @@ class TestFlags:
         args, kwargs = compiled_func(
             context={},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3557,7 +3557,7 @@ class TestFlags:
         args2, kwargs2 = compiled_func2(
             context={"my_flag": "x"},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3577,7 +3577,7 @@ class TestFlags:
         args1, kwargs1 = compiled_func1(
             context={"my_flag": ["arg1", "arg2"]},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3594,7 +3594,7 @@ class TestFlags:
         args2, kwargs2 = compiled_func2(
             context={"my_flag": ["arg1", "arg2"]},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3615,7 +3615,7 @@ class TestFlags:
         args1, kwargs1 = compiled_func1(
             context={},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
@@ -3632,7 +3632,7 @@ class TestFlags:
         args2, kwargs2 = compiled_func2(
             context={},
             variable=lambda ctx, var: ctx[var],
-            expression=lambda ctx, expr: f"EXPRESSION_RESOLVED:{expr}",
+            template_string=lambda ctx, expr: f"TEMPLATE_RESOLVED:{expr}",
             translation=lambda ctx, text: f"TRANSLATION_RESOLVED:{text}",
             filter=lambda ctx, name, value, arg=None: f"{name}({value}, {arg})",
         )
